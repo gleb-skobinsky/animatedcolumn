@@ -41,6 +41,41 @@ import controls.VisibilityState.ToClose
 import controls.VisibilityState.ToPopUp
 import kotlinx.coroutines.delay
 
+@Stable
+class AwaitedEnterTransition(
+    val duration: Int,
+    val convert: (Int) -> EnterTransition
+) {
+    val transition: EnterTransition = convert(duration)
+}
+
+operator fun AwaitedEnterTransition.times(value: Int): AwaitedEnterTransition {
+    val newDuration = duration * value
+    return AwaitedEnterTransition(newDuration, convert)
+}
+
+@Stable
+class AwaitedExitTransition(
+    val duration: Int,
+    val convert: (Int) -> ExitTransition
+) {
+    val transition: ExitTransition = convert(duration)
+}
+
+operator fun AwaitedExitTransition.times(value: Int): AwaitedExitTransition {
+    val newDuration = duration * value
+    return AwaitedExitTransition(newDuration, convert)
+}
+
+private const val DEFAULT_DURATION = 300
+
+val defaultExitTransition =
+    AwaitedExitTransition(DEFAULT_DURATION) { shrinkVertically(tween(it)) + fadeOut(tween(it)) }
+
+val defaultEnterTransition =
+    AwaitedEnterTransition(DEFAULT_DURATION) { expandVertically(tween(it)) + fadeIn(tween(it)) }
+
+
 
 @Stable
 private data class WithVisibility<T>(
